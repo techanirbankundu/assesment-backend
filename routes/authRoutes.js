@@ -3,7 +3,7 @@ import { db } from '../config/database.js';
 import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+import { authenticate, optionalAuth } from '../middleware/authMiddleware.js';
 import { validateUserRegistration, validateUserLogin, validatePasswordChange } from '../middleware/validation.js';
 import { logger } from '../utils/logger.js';
 import bcrypt from 'bcryptjs';
@@ -247,9 +247,16 @@ router.post('/refresh', async (req, res) => {
 
 // @desc    Get current user
 // @route   GET /api/auth/me
-// @access  Private
-router.get('/me', authenticate, async (req, res) => {
+// @access  Optional (returns user if authenticated, null if not)
+router.get('/me', optionalAuth, async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated 1'
+      });
+    }
+
     const userResult = await db.select()
       .from(users)
       .where(eq(users.id, req.user.id))
