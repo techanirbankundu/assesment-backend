@@ -90,9 +90,9 @@ npm run dev
 
 The server will start on `http://localhost:3000` even without PostgreSQL.
 
-## Database Setup (PostgreSQL)
+## Database Setup (PostgreSQL with Drizzle + Neon Serverless)
 
-### Using Docker (Recommended)
+### Option A: Local Postgres via Docker (for local dev)
 ```bash
 # Start PostgreSQL with Docker
 docker run --name ragilly-postgres \
@@ -102,16 +102,55 @@ docker run --name ragilly-postgres \
   -p 5432:5432 \
   -d postgres:15
 
-# Run migrations
-npm run migrate
+# Run migrations with Drizzle Kit
+npx drizzle-kit generate
+npx drizzle-kit push
 ```
 
-### Local Installation
+### Option B: Local Installation
 1. Install PostgreSQL from https://www.postgresql.org/download/
 2. Start PostgreSQL service
 3. Create database: `createdb ragilly`
 4. Update `.env` with database credentials
-5. Run: `npm run migrate`
+5. Run migrations:
+   - `npx drizzle-kit generate`
+   - `npx drizzle-kit push`
+
+### Option C: Neon Serverless (Production Recommended)
+
+Use Neon’s serverless Postgres with the Neon HTTP driver for serverless environments (Vercel):
+
+1. Get a Neon connection string (ensure it includes `sslmode=require`), e.g.
+   `postgres://user:password@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require`
+2. Set `DB_URI` to that value in your environment.
+3. Configure Drizzle to use Neon HTTP driver at runtime.
+
+Example Drizzle config (`drizzle.config.ts`):
+```ts
+import type { Config } from 'drizzle-kit';
+
+export default {
+  schema: './backend/db/schema.ts',
+  out: './backend/drizzle',
+  dialect: 'postgresql',
+  dbCredentials: { url: process.env.DB_URI! },
+} satisfies Config;
+```
+
+Example runtime client (`backend/config/database.ts`):
+```ts
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DB_URI!); // DB_URI must include sslmode=require
+export const db = drizzle(sql);
+```
+
+Run migrations against Neon in CI before deploy:
+```bash
+npx drizzle-kit generate
+npx drizzle-kit push
+```
 
 For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md).
 
@@ -125,13 +164,10 @@ NODE_ENV=development
 PORT=3000
 HOST=localhost
 
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_NAME=ragilly
-DB_SSL=false
+# Database Configuration (prefer single URI)
+DB_URI=postgres://user:password@localhost:5432/ragilly
+# For Neon production, e.g.
+# DB_URI=postgres://user:password@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require
 
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key

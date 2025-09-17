@@ -14,7 +14,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "migrate": "node scripts/migrate.js",
-    "db:reset": "npm run migrate"
+    "db-generate": "npx drizzle-kit generate",
+    "db-push": "npx drizzle-kit push"
   },
   "keywords": [
     "express",
