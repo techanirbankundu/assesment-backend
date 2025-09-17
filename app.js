@@ -42,7 +42,19 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = config.corsOrigin.split(',').map(origin => origin.trim());
+    // Default allowed origins
+    const defaultOrigins = [
+      'http://localhost:3000',
+      'https://ragillyfrontend.vercel.app',
+      'https://ragilly-frontend.vercel.app',
+      'https://ragilly.vercel.app'
+    ];
+    
+    // Get origins from config and combine with defaults
+    const configOrigins = config.corsOrigin ? config.corsOrigin.split(',').map(origin => origin.trim()) : [];
+    const allowedOrigins = [...new Set([...defaultOrigins, ...configOrigins])];
+    
+    console.log('CORS check:', { origin, allowedOrigins });
     
     if (allowedOrigins.includes(origin)) {
       callback(null, true);

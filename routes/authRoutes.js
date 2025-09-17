@@ -10,6 +10,21 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
+// @desc    Test CORS endpoint
+// @route   GET /api/auth/test-cors
+// @access  Public
+router.get('/test-cors', (req, res) => {
+  res.json({
+    success: true,
+    message: 'CORS test successful',
+    data: {
+      origin: req.get('Origin'),
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    }
+  });
+});
+
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
@@ -95,6 +110,14 @@ router.post('/register', validateUserRegistration, async (req, res) => {
 router.post('/login', validateUserLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    // Log login attempt
+    logger.info('Login attempt', {
+      email,
+      origin: req.get('Origin'),
+      userAgent: req.get('User-Agent'),
+      ip: req.ip
+    });
 
     // Find user with password
     const userResult = await db.select()
@@ -164,12 +187,21 @@ router.post('/login', validateUserLogin, async (req, res) => {
 
     logger.info('User logged in successfully', { userId: user.id, email: user.email });
 
-    res.cookie('access_token', tokens.accessToken, {
+    // Log cookie settings
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge: 1000 * 60 * 15 // 15 minutes (short-lived)
+    };
+    
+    logger.info('Setting cookie', {
+      secure: cookieOptions.secure,
+      sameSite: cookieOptions.sameSite,
+      origin: req.get('Origin')
     });
+
+    res.cookie('access_token', tokens.accessToken, cookieOptions);
 
     res.json({
       success: true,

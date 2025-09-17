@@ -21,7 +21,8 @@ JWT_REFRESH_SECRET=your_super_strong_refresh_secret_here
 SESSION_SECRET=your_super_strong_session_secret_here
 
 # CORS (IMPORTANT: Set your production frontend URL)
-CORS_ORIGIN=https://your-frontend-domain.com,https://www.your-frontend-domain.com
+# For Vercel deployment, use your Vercel domain
+CORS_ORIGIN=https://ragillyfrontend.vercel.app,https://ragilly-frontend.vercel.app
 
 # Email (if using email features)
 SMTP_HOST=smtp.gmail.com
