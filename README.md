@@ -286,10 +286,12 @@ API documentation is available at `/api-docs` when the server is running.
 4. Add tests if applicable
 5. Submit a pull request
 
-## License
-
-MIT License - see LICENSE file for details
 
 ## Support
 
 For support and questions, please contact the development team or create an issue in the repository.
+
+## Live URLs
+
+- Frontend: https://ragillyfrontend.vercel.app/
+- Backend: https://ragillybaceknd.vercel.app

@@ -186,3 +186,8 @@ DB_URI=postgres://postgres:password@localhost:5432/ragilly
 ```
 
 Ensure your `schema.ts` matches Neon’s Postgres version and features. Drizzle will generate compatible SQL.
+
+## Live URLs
+
+- Frontend: https://ragillyfrontend.vercel.app/
+- Backend: https://ragillybaceknd.vercel.app
