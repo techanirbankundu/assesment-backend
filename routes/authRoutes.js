@@ -68,7 +68,7 @@ router.post('/register', validateUserRegistration, async (req, res) => {
     res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge: 1000 * 60 * 15 // 15 minutes (short-lived)
     });
 
@@ -167,7 +167,7 @@ router.post('/login', validateUserLogin, async (req, res) => {
     res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge: 1000 * 60 * 15 // 15 minutes (short-lived)
     });
 
@@ -227,7 +227,7 @@ router.post('/refresh', async (req, res) => {
     res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge: 1000 * 60 * 15
     });
 
@@ -250,10 +250,19 @@ router.post('/refresh', async (req, res) => {
 // @access  Optional (returns user if authenticated, null if not)
 router.get('/me', optionalAuth, async (req, res) => {
   try {
+    // Log request details for debugging
+    logger.info('Auth /me request', {
+      hasUser: !!req.user,
+      hasToken: !!req.cookies?.access_token,
+      userAgent: req.get('User-Agent'),
+      origin: req.get('Origin'),
+      referer: req.get('Referer')
+    });
+
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Not authenticated 1'
+        message: 'Not authenticated'
       });
     }
 
